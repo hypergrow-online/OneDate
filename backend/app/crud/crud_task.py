@@ -14,7 +14,8 @@ def create_task(task: TaskCreate, user_id: str) -> dict:
     task_dict["updated_at"] = datetime.utcnow()
     
     result = db.tasks.insert_one(task_dict)
-    task_dict["_id"] = str(result.inserted_id)
+    task_dict["id"] = str(result.inserted_id)
+    task_dict.pop("_id", None)
     return task_dict
 
 
@@ -23,7 +24,8 @@ def get_task(task_id: str, user_id: str) -> Optional[dict]:
     db = get_database()
     task = db.tasks.find_one({"_id": ObjectId(task_id), "user_id": user_id})
     if task:
-        task["_id"] = str(task["_id"])
+        task["id"] = str(task["_id"])
+        del task["_id"]
     return task
 
 
@@ -32,14 +34,16 @@ def get_tasks(user_id: str, skip: int = 0, limit: int = 100) -> List[dict]:
     db = get_database()
     tasks = list(db.tasks.find({"user_id": user_id}).skip(skip).limit(limit))
     for task in tasks:
-        task["_id"] = str(task["_id"])
+        task["id"] = str(task["_id"])
+        del task["_id"]
     return tasks
 
 
 def update_task(task_id: str, task_update: TaskUpdate, user_id: str) -> Optional[dict]:
     """Update a task."""
     db = get_database()
-    update_dict = {k: v for k, v in task_update.model_dump().items() if v is not None}
+    # Get all fields that were explicitly provided in the update
+    update_dict = task_update.model_dump(exclude_unset=True)
     update_dict["updated_at"] = datetime.utcnow()
     
     result = db.tasks.find_one_and_update(
@@ -49,7 +53,8 @@ def update_task(task_id: str, task_update: TaskUpdate, user_id: str) -> Optional
     )
     
     if result:
-        result["_id"] = str(result["_id"])
+        result["id"] = str(result["_id"])
+        del result["_id"]
     return result
 
 
@@ -71,7 +76,8 @@ def start_timer(task_id: str, user_id: str) -> Optional[dict]:
     
     if task.get("is_running", False):
         # Already running, return current state
-        task["_id"] = str(task["_id"])
+        task["id"] = str(task["_id"])
+        del task["_id"]
         return task
     
     # Start the timer
@@ -89,7 +95,8 @@ def start_timer(task_id: str, user_id: str) -> Optional[dict]:
     )
     
     if result:
-        result["_id"] = str(result["_id"])
+        result["id"] = str(result["_id"])
+        del result["_id"]
     return result
 
 
@@ -137,7 +144,8 @@ def pause_timer(task_id: str, user_id: str) -> Optional[dict]:
     )
     
     if result:
-        result["_id"] = str(result["_id"])
+        result["id"] = str(result["_id"])
+        del result["_id"]
     return result
 
 
@@ -187,5 +195,6 @@ def complete_task(task_id: str, user_id: str) -> Optional[dict]:
     )
     
     if result:
-        result["_id"] = str(result["_id"])
+        result["id"] = str(result["_id"])
+        del result["_id"]
     return result

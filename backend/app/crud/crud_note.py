@@ -14,7 +14,8 @@ def create_note(note: NoteCreate, user_id: str) -> dict:
     note_dict["updated_at"] = datetime.utcnow()
     
     result = db.notes.insert_one(note_dict)
-    note_dict["_id"] = str(result.inserted_id)
+    note_dict["id"] = str(result.inserted_id)
+    note_dict.pop("_id", None)
     return note_dict
 
 
@@ -23,7 +24,8 @@ def get_note(note_id: str, user_id: str) -> Optional[dict]:
     db = get_database()
     note = db.notes.find_one({"_id": ObjectId(note_id), "user_id": user_id})
     if note:
-        note["_id"] = str(note["_id"])
+        note["id"] = str(note["_id"])
+        del note["_id"]
     return note
 
 
@@ -32,7 +34,8 @@ def get_notes(user_id: str, skip: int = 0, limit: int = 100) -> List[dict]:
     db = get_database()
     notes = list(db.notes.find({"user_id": user_id}).skip(skip).limit(limit))
     for note in notes:
-        note["_id"] = str(note["_id"])
+        note["id"] = str(note["_id"])
+        del note["_id"]
     return notes
 
 
@@ -47,7 +50,8 @@ def search_notes(user_id: str, query: str) -> List[dict]:
         ]
     }))
     for note in notes:
-        note["_id"] = str(note["_id"])
+        note["id"] = str(note["_id"])
+        del note["_id"]
     return notes
 
 
@@ -64,7 +68,8 @@ def update_note(note_id: str, note_update: NoteUpdate, user_id: str) -> Optional
     )
     
     if result:
-        result["_id"] = str(result["_id"])
+        result["id"] = str(result["_id"])
+        del result["_id"]
     return result
 
 

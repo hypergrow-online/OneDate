@@ -38,6 +38,7 @@ export default function Register() {
     setLoading(true);
 
     try {
+      // eslint-disable-next-line no-unused-vars
       const { confirmPassword, ...userData } = formData;
       await authService.register(userData);
       navigate('/login');

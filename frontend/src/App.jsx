@@ -13,6 +13,7 @@ function PrivateRoute({ children }) {
 }
 
 function App() {
+  // eslint-disable-next-line no-unused-vars
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
 
   useEffect(() => {

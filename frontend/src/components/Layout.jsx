@@ -1,8 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, CheckSquare, FileText, LogOut, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { LayoutDashboard, CheckSquare, FileText, LogOut, Menu } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +12,6 @@ import {
 export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     authService.logout();

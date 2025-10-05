@@ -24,6 +24,21 @@ export const taskService = {
   async deleteTask(id) {
     await api.delete(`/api/v1/tasks/${id}`);
   },
+
+  async startTimer(id) {
+    const response = await api.post(`/api/v1/tasks/${id}/start`);
+    return response.data;
+  },
+
+  async pauseTimer(id) {
+    const response = await api.post(`/api/v1/tasks/${id}/pause`);
+    return response.data;
+  },
+
+  async completeTask(id) {
+    const response = await api.post(`/api/v1/tasks/${id}/complete`);
+    return response.data;
+  },
 };
 
 export default taskService;

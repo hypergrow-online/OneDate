@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, CheckSquare, FileText, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, FileText, LogOut, Menu, Grid3x3 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +24,7 @@ export default function Layout({ children }) {
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/matrix', label: 'Matriz', icon: Grid3x3 },
     { path: '/tasks', label: 'Tareas', icon: CheckSquare },
     { path: '/notes', label: 'Notas', icon: FileText },
   ];

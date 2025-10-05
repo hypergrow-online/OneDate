@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import Notes from './pages/Notes';
+import EisenhowerMatrix from './pages/EisenhowerMatrix';
 import Layout from './components/Layout';
 import { authService } from './services/auth';
 
@@ -34,6 +35,7 @@ function App() {
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/tasks" element={<Tasks />} />
+                  <Route path="/matrix" element={<EisenhowerMatrix />} />
                   <Route path="/notes" element={<Notes />} />
                 </Routes>
               </Layout>

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.models.task import TaskCreate, TaskUpdate, TaskResponse
 from app.crud import crud_task
 from app.core.deps import get_current_user
+from datetime import datetime
 
 router = APIRouter()
 
@@ -62,3 +63,39 @@ async def delete_task(task_id: str, current_user: dict = Depends(get_current_use
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
         )
+
+
+@router.post("/{task_id}/start", response_model=TaskResponse)
+async def start_task_timer(task_id: str, current_user: dict = Depends(get_current_user)):
+    """Start the timer for a task."""
+    task = crud_task.start_timer(task_id, str(current_user["_id"]))
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    return task
+
+
+@router.post("/{task_id}/pause", response_model=TaskResponse)
+async def pause_task_timer(task_id: str, current_user: dict = Depends(get_current_user)):
+    """Pause the timer for a task."""
+    task = crud_task.pause_timer(task_id, str(current_user["_id"]))
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found or timer not running"
+        )
+    return task
+
+
+@router.post("/{task_id}/complete", response_model=TaskResponse)
+async def complete_task(task_id: str, current_user: dict = Depends(get_current_user)):
+    """Complete a task and stop the timer."""
+    task = crud_task.complete_task(task_id, str(current_user["_id"]))
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    return task

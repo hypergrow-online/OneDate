@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Trash2, Circle, Clock, CheckCircle2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Circle, Clock, CheckCircle2, Play, Pause, CheckCheck, Timer } from 'lucide-react';
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
@@ -91,6 +91,21 @@ export default function Tasks() {
     done: tasks.filter(t => t.status === 'done'),
   };
 
+  const handleTimerAction = async (taskId, action) => {
+    try {
+      if (action === 'start') {
+        await taskService.startTimer(taskId);
+      } else if (action === 'pause') {
+        await taskService.pauseTimer(taskId);
+      } else if (action === 'complete') {
+        await taskService.completeTask(taskId);
+      }
+      loadTasks();
+    } catch (error) {
+      console.error('Error with timer action:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -137,7 +152,13 @@ export default function Tasks() {
               </p>
             ) : (
               groupedTasks.todo.map((task) => (
-                <TaskCard key={task.id} task={task} onEdit={handleEdit} onDelete={handleDelete} />
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  onEdit={handleEdit} 
+                  onDelete={handleDelete}
+                  onTimerAction={handleTimerAction}
+                />
               ))
             )}
           </CardContent>
@@ -161,7 +182,13 @@ export default function Tasks() {
               </p>
             ) : (
               groupedTasks.in_progress.map((task) => (
-                <TaskCard key={task.id} task={task} onEdit={handleEdit} onDelete={handleDelete} />
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  onEdit={handleEdit} 
+                  onDelete={handleDelete}
+                  onTimerAction={handleTimerAction}
+                />
               ))
             )}
           </CardContent>
@@ -185,7 +212,13 @@ export default function Tasks() {
               </p>
             ) : (
               groupedTasks.done.map((task) => (
-                <TaskCard key={task.id} task={task} onEdit={handleEdit} onDelete={handleDelete} />
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  onEdit={handleEdit} 
+                  onDelete={handleDelete}
+                  onTimerAction={handleTimerAction}
+                />
               ))
             )}
           </CardContent>
@@ -234,6 +267,7 @@ export default function Tasks() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="backlog">Backlog</SelectItem>
                       <SelectItem value="todo">Pendiente</SelectItem>
                       <SelectItem value="in_progress">En Proceso</SelectItem>
                       <SelectItem value="done">Completada</SelectItem>
@@ -281,7 +315,7 @@ export default function Tasks() {
   );
 }
 
-function TaskCard({ task, onEdit, onDelete }) {
+function TaskCard({ task, onEdit, onDelete, onTimerAction }) {
   const getPriorityVariant = (priority) => {
     switch (priority) {
       case 'urgent':
@@ -305,6 +339,16 @@ function TaskCard({ task, onEdit, onDelete }) {
     return labels[priority] || priority;
   };
 
+  const formatTime = (seconds) => {
+    if (!seconds) return '0m';
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50">
       <CardContent className="p-4">
@@ -315,10 +359,60 @@ function TaskCard({ task, onEdit, onDelete }) {
           </Badge>
         </div>
         {task.description && (
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
             {task.description}
           </p>
         )}
+        
+        {/* Time Tracking Display */}
+        {task.total_time_spent > 0 && (
+          <div className="flex items-center gap-1 mb-3 text-xs text-muted-foreground">
+            <Timer className="h-3 w-3" />
+            <span>Tiempo: {formatTime(task.total_time_spent)}</span>
+            {task.is_running && (
+              <Badge variant="outline" className="ml-2 text-xs animate-pulse">
+                En ejecución
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Timer Controls */}
+        {task.status !== 'done' && (
+          <div className="flex gap-2 mb-3">
+            {!task.is_running ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onTimerAction(task.id, 'start')}
+                className="h-7 gap-1 flex-1"
+              >
+                <Play className="h-3 w-3" />
+                Ejecutar
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onTimerAction(task.id, 'pause')}
+                className="h-7 gap-1 flex-1"
+              >
+                <Pause className="h-3 w-3" />
+                Pausar
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => onTimerAction(task.id, 'complete')}
+              className="h-7 gap-1 flex-1"
+            >
+              <CheckCheck className="h-3 w-3" />
+              Finalizar
+            </Button>
+          </div>
+        )}
+
         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             size="sm"

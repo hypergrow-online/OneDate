@@ -58,3 +58,134 @@ def delete_task(task_id: str, user_id: str) -> bool:
     db = get_database()
     result = db.tasks.delete_one({"_id": ObjectId(task_id), "user_id": user_id})
     return result.deleted_count > 0
+
+
+def start_timer(task_id: str, user_id: str) -> Optional[dict]:
+    """Start the timer for a task."""
+    db = get_database()
+    
+    # Check if task exists and is not already running
+    task = db.tasks.find_one({"_id": ObjectId(task_id), "user_id": user_id})
+    if not task:
+        return None
+    
+    if task.get("is_running", False):
+        # Already running, return current state
+        task["_id"] = str(task["_id"])
+        return task
+    
+    # Start the timer
+    now = datetime.utcnow()
+    result = db.tasks.find_one_and_update(
+        {"_id": ObjectId(task_id), "user_id": user_id},
+        {
+            "$set": {
+                "is_running": True,
+                "current_session_start": now,
+                "updated_at": now
+            }
+        },
+        return_document=True
+    )
+    
+    if result:
+        result["_id"] = str(result["_id"])
+    return result
+
+
+def pause_timer(task_id: str, user_id: str) -> Optional[dict]:
+    """Pause the timer for a task."""
+    db = get_database()
+    
+    # Get the task
+    task = db.tasks.find_one({"_id": ObjectId(task_id), "user_id": user_id})
+    if not task or not task.get("is_running", False):
+        return None
+    
+    # Calculate elapsed time
+    now = datetime.utcnow()
+    start_time = task.get("current_session_start")
+    if not start_time:
+        return None
+    
+    duration_seconds = int((now - start_time).total_seconds())
+    
+    # Create time entry
+    time_entry = {
+        "start_time": start_time,
+        "end_time": now,
+        "duration_seconds": duration_seconds
+    }
+    
+    # Update task
+    current_total = task.get("total_time_spent", 0)
+    time_entries = task.get("time_entries", [])
+    time_entries.append(time_entry)
+    
+    result = db.tasks.find_one_and_update(
+        {"_id": ObjectId(task_id), "user_id": user_id},
+        {
+            "$set": {
+                "is_running": False,
+                "current_session_start": None,
+                "total_time_spent": current_total + duration_seconds,
+                "time_entries": time_entries,
+                "updated_at": now
+            }
+        },
+        return_document=True
+    )
+    
+    if result:
+        result["_id"] = str(result["_id"])
+    return result
+
+
+def complete_task(task_id: str, user_id: str) -> Optional[dict]:
+    """Complete a task and stop the timer if running."""
+    db = get_database()
+    
+    # Get the task
+    task = db.tasks.find_one({"_id": ObjectId(task_id), "user_id": user_id})
+    if not task:
+        return None
+    
+    now = datetime.utcnow()
+    update_data = {
+        "status": "done",
+        "completion_date": now,
+        "updated_at": now
+    }
+    
+    # If timer is running, stop it
+    if task.get("is_running", False):
+        start_time = task.get("current_session_start")
+        if start_time:
+            duration_seconds = int((now - start_time).total_seconds())
+            
+            time_entry = {
+                "start_time": start_time,
+                "end_time": now,
+                "duration_seconds": duration_seconds
+            }
+            
+            current_total = task.get("total_time_spent", 0)
+            time_entries = task.get("time_entries", [])
+            time_entries.append(time_entry)
+            
+            update_data.update({
+                "is_running": False,
+                "current_session_start": None,
+                "total_time_spent": current_total + duration_seconds,
+                "time_entries": time_entries
+            })
+    
+    result = db.tasks.find_one_and_update(
+        {"_id": ObjectId(task_id), "user_id": user_id},
+        {"$set": update_data},
+        return_document=True
+    )
+    
+    if result:
+        result["_id"] = str(result["_id"])
+    return result

@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { taskService } from '../services/tasks';
 import { noteService } from '../services/notes';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, Circle, Clock, FileText, ListTodo } from 'lucide-react';
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
@@ -41,161 +44,188 @@ export default function Dashboard() {
     }
   };
 
+  const getPriorityVariant = (priority) => {
+    switch (priority) {
+      case 'urgent':
+        return 'destructive';
+      case 'high':
+        return 'default';
+      case 'medium':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getPriorityLabel = (priority) => {
+    const labels = {
+      urgent: 'Urgente',
+      high: 'Alta',
+      medium: 'Media',
+      low: 'Baja',
+    };
+    return labels[priority] || priority;
+  };
+
   if (loading) {
-    return <div className="text-center py-12">Cargando...</div>;
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="px-4 py-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+    <div className="px-4 py-6 space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-2">
+          Resumen de tu productividad personal
+        </p>
+      </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="text-3xl">📋</div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Total Tareas
-                  </dt>
-                  <dd className="text-3xl font-semibold text-gray-900">
-                    {stats.totalTasks}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Tareas
+            </CardTitle>
+            <ListTodo className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalTasks}</div>
+            <p className="text-xs text-muted-foreground">
+              Tareas en el sistema
+            </p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="text-3xl">✅</div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Completadas
-                  </dt>
-                  <dd className="text-3xl font-semibold text-green-600">
-                    {stats.completedTasks}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Completadas
+            </CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{stats.completedTasks}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.totalTasks > 0 
+                ? `${Math.round((stats.completedTasks / stats.totalTasks) * 100)}% del total`
+                : 'Sin tareas'}
+            </p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="text-3xl">⏳</div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Pendientes
-                  </dt>
-                  <dd className="text-3xl font-semibold text-orange-600">
-                    {stats.pendingTasks}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Pendientes
+            </CardTitle>
+            <Clock className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{stats.pendingTasks}</div>
+            <p className="text-xs text-muted-foreground">
+              Por completar
+            </p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="text-3xl">📝</div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Total Notas
-                  </dt>
-                  <dd className="text-3xl font-semibold text-blue-600">
-                    {stats.totalNotes}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Notas
+            </CardTitle>
+            <FileText className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{stats.totalNotes}</div>
+            <p className="text-xs text-muted-foreground">
+              Notas guardadas
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Recent Tasks */}
-      <div className="bg-white shadow rounded-lg mb-8">
-        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Tareas Recientes
-          </h3>
-        </div>
-        <div className="px-4 py-5 sm:p-6">
-          {tasks.length === 0 ? (
-            <p className="text-gray-500">No hay tareas todavía</p>
-          ) : (
-            <ul className="divide-y divide-gray-200">
-              {tasks.slice(0, 5).map((task) => (
-                <li key={task.id} className="py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {task.title}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {task.status === 'done' ? '✅ Completada' : '⏳ Pendiente'}
-                      </p>
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Recent Tasks */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tareas Recientes</CardTitle>
+            <CardDescription>
+              Últimas 5 tareas registradas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {tasks.length === 0 ? (
+              <div className="text-center py-6 text-muted-foreground">
+                <Circle className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                <p>No hay tareas todavía</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {tasks.slice(0, 5).map((task) => (
+                  <div key={task.id} className="flex items-start justify-between gap-4 pb-4 border-b last:border-0 last:pb-0">
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        {task.status === 'done' ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        )}
+                        <p className={`font-medium ${task.status === 'done' ? 'line-through text-muted-foreground' : ''}`}>
+                          {task.title}
+                        </p>
+                      </div>
+                      {task.description && (
+                        <p className="text-sm text-muted-foreground ml-6 line-clamp-1">
+                          {task.description}
+                        </p>
+                      )}
                     </div>
-                    <span className={`px-2 py-1 text-xs rounded ${
-                      task.priority === 'urgent' ? 'bg-red-100 text-red-800' :
-                      task.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                      task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {task.priority}
-                    </span>
+                    <Badge variant={getPriorityVariant(task.priority)}>
+                      {getPriorityLabel(task.priority)}
+                    </Badge>
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Recent Notes */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Notas Recientes
-          </h3>
-        </div>
-        <div className="px-4 py-5 sm:p-6">
-          {notes.length === 0 ? (
-            <p className="text-gray-500">No hay notas todavía</p>
-          ) : (
-            <ul className="divide-y divide-gray-200">
-              {notes.slice(0, 5).map((note) => (
-                <li key={note.id} className="py-3">
-                  <p className="text-sm font-medium text-gray-900">
-                    {note.title}
-                  </p>
-                  <p className="text-sm text-gray-500 truncate">
-                    {note.content.substring(0, 100)}...
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {/* Recent Notes */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Notas Recientes</CardTitle>
+            <CardDescription>
+              Últimas 5 notas guardadas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {notes.length === 0 ? (
+              <div className="text-center py-6 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                <p>No hay notas todavía</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {notes.slice(0, 5).map((note) => (
+                  <div key={note.id} className="pb-4 border-b last:border-0 last:pb-0">
+                    <p className="font-medium mb-1">{note.title}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {note.content}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

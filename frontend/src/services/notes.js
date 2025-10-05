@@ -29,6 +29,20 @@ export const noteService = {
     const response = await api.get(`/api/v1/notes/search?q=${encodeURIComponent(query)}`);
     return response.data;
   },
+
+  async uploadVideoNote(title, folder, videoBlob) {
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('folder', folder || 'General');
+    formData.append('video', videoBlob, 'video-note.webm');
+
+    const response = await api.post('/api/v1/notes/upload-video', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 };
 
 export default noteService;

@@ -7,12 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Trash2, Search, X, FolderOpen, StickyNote } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, FolderOpen, StickyNote, Video } from 'lucide-react';
+import VideoRecorder from '../components/VideoRecorder';
 
 export default function Notes() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showVideoRecorder, setShowVideoRecorder] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
@@ -99,6 +101,17 @@ export default function Notes() {
     setEditingNote(null);
   };
 
+  const handleVideoSave = async (title, folder, videoBlob) => {
+    try {
+      await noteService.uploadVideoNote(title, folder, videoBlob);
+      loadNotes();
+      setShowVideoRecorder(false);
+    } catch (error) {
+      console.error('Error uploading video note:', error);
+      throw error;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -119,10 +132,16 @@ export default function Notes() {
             Organiza y gestiona tus notas personales
           </p>
         </div>
-        <Button onClick={() => setShowModal(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nueva Nota
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowVideoRecorder(true)} variant="outline" className="flex items-center gap-2">
+            <Video className="h-4 w-4" />
+            Video Nota
+          </Button>
+          <Button onClick={() => setShowModal(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Nueva Nota
+          </Button>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -242,17 +261,29 @@ export default function Notes() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Video Recorder Modal */}
+      <VideoRecorder
+        open={showVideoRecorder}
+        onClose={() => setShowVideoRecorder(false)}
+        onSave={handleVideoSave}
+      />
     </div>
   );
 }
 
 function NoteCard({ note, onEdit, onDelete }) {
+  const isVideoNote = note.note_type === 'video';
+  
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50 flex flex-col h-full">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg line-clamp-1">{note.title}</CardTitle>
+            <CardTitle className="text-lg line-clamp-1 flex items-center gap-2">
+              {isVideoNote && <Video className="h-4 w-4 text-primary" />}
+              {note.title}
+            </CardTitle>
             <CardDescription className="flex items-center gap-1 mt-1">
               <FolderOpen className="h-3 w-3" />
               {note.folder}
@@ -261,9 +292,22 @@ function NoteCard({ note, onEdit, onDelete }) {
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-4 flex-1">
-          {note.content}
-        </p>
+        {isVideoNote && note.video_url ? (
+          <div className="mb-4">
+            <video 
+              controls 
+              className="w-full rounded-lg bg-black"
+              style={{ maxHeight: '200px' }}
+            >
+              <source src={note.video_url} type="video/webm" />
+              Tu navegador no soporta el elemento de video.
+            </video>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-4 flex-1">
+            {note.content}
+          </p>
+        )}
         {note.tags && note.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-4">
             {note.tags.map((tag, index) => (
@@ -274,15 +318,17 @@ function NoteCard({ note, onEdit, onDelete }) {
           </div>
         )}
         <div className="flex justify-end gap-2 pt-4 border-t opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onEdit(note)}
-            className="h-8 gap-1"
-          >
-            <Edit2 className="h-3 w-3" />
-            Editar
-          </Button>
+          {!isVideoNote && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onEdit(note)}
+              className="h-8 gap-1"
+            >
+              <Edit2 className="h-3 w-3" />
+              Editar
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"

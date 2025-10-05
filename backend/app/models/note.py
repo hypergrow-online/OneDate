@@ -8,6 +8,8 @@ class NoteBase(BaseModel):
     content: str
     folder: Optional[str] = "General"
     tags: List[str] = []
+    note_type: Optional[str] = "text"  # "text" or "video"
+    video_url: Optional[str] = None  # Google Drive URL for video notes
 
 
 class NoteCreate(NoteBase):
@@ -19,6 +21,8 @@ class NoteUpdate(BaseModel):
     content: Optional[str] = None
     folder: Optional[str] = None
     tags: Optional[List[str]] = None
+    note_type: Optional[str] = None
+    video_url: Optional[str] = None
 
 
 class NoteResponse(NoteBase):

@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.db.mongodb_utils import connect_to_mongo, close_mongo_connection
 from app.api.v1 import auth, tasks, notes
+import os
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -14,6 +16,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Create uploads directory if it doesn't exist
+os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+
+# Mount static files for uploaded videos
+app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 
 @app.on_event("startup")

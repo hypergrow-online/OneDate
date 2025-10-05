@@ -15,6 +15,8 @@ build/
 # Backend
 backend/.env
 backend/venv/
+backend/uploads/
+backend/*.json
 
 # Frontend
 frontend/node_modules/
@@ -50,3 +52,7 @@ Thumbs.db
 # Temporary files
 /tmp/
 *.tmp
+
+# Google Drive credentials
+*credentials*.json
+*service-account*.json

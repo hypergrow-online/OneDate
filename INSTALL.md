@@ -173,6 +173,10 @@ OneDate/
 - ✅ Autenticación JWT
 - ✅ Gestión de tareas (CRUD)
 - ✅ Sistema de notas con búsqueda
+- ✅ **Video Notas** - Grabación y almacenamiento de video notas 🆕
+  - Grabación usando cámara y micrófono del navegador
+  - Respaldo automático en Google Drive (opcional)
+  - Almacenamiento local como backup
 - ✅ Dashboard con estadísticas
 - ✅ Interfaz responsive con Tailwind CSS
 - ✅ Organización de tareas tipo Kanban

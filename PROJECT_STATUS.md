@@ -151,6 +151,11 @@ frontend/
    - Búsqueda por título y contenido
    - Organización en carpetas
    - Guardado persistente
+   - **Video Notas** 🆕
+     - Grabación de video usando cámara y micrófono
+     - Respaldo automático en Google Drive (carpeta Video/Notas)
+     - Almacenamiento local como backup
+     - Reproducción directa en la interfaz
 
 4. **Dashboard** ✅
    - Estadísticas en tiempo real
@@ -173,6 +178,8 @@ frontend/
 - python-jose (JWT)
 - passlib (hashing)
 - Uvicorn (ASGI server)
+- Google API Client (Drive integration)
+- aiofiles (async file handling)
 
 **Frontend:**
 - React 18.2.0

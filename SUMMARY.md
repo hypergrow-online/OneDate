@@ -67,6 +67,7 @@ GET    /api/v1/notes/search     # Buscar notas
 GET    /api/v1/notes/{id}       # Obtener nota
 PUT    /api/v1/notes/{id}       # Actualizar nota
 DELETE /api/v1/notes/{id}       # Eliminar nota
+POST   /api/v1/notes/upload-video  # Subir video nota 🆕
 ```
 
 ### 2. Frontend Completo (React + Vite + Tailwind)

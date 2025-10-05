@@ -31,6 +31,18 @@ class TimeEntry(BaseModel):
     duration_seconds: Optional[int] = None
 
 
+class Subtask(BaseModel):
+    id: Optional[str] = None
+    title: str
+    completed: bool = False
+
+
+class Resource(BaseModel):
+    name: str
+    url: Optional[str] = None
+    description: Optional[str] = None
+
+
 class TaskBase(BaseModel):
     title: str
     description: Optional[str] = None
@@ -46,6 +58,12 @@ class TaskBase(BaseModel):
     is_running: bool = False
     current_session_start: Optional[datetime] = None
     completion_date: Optional[datetime] = None
+    main_objectives: List[str] = []
+    secondary_objectives: List[str] = []
+    resources: List[Resource] = []
+    resource_links: List[str] = []
+    additional_notes: Optional[str] = None
+    subtasks: List[Subtask] = []
 
 
 class TaskCreate(TaskBase):
@@ -67,6 +85,12 @@ class TaskUpdate(BaseModel):
     is_running: Optional[bool] = None
     current_session_start: Optional[datetime] = None
     completion_date: Optional[datetime] = None
+    main_objectives: Optional[List[str]] = None
+    secondary_objectives: Optional[List[str]] = None
+    resources: Optional[List[Resource]] = None
+    resource_links: Optional[List[str]] = None
+    additional_notes: Optional[str] = None
+    subtasks: Optional[List[Subtask]] = None
 
 
 class TaskResponse(TaskBase):

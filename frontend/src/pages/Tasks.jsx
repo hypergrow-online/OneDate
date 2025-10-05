@@ -8,18 +8,37 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Trash2, Circle, Clock, CheckCircle2, Play, Pause, CheckCheck, Timer } from 'lucide-react';
+import { Plus, Edit2, Trash2, Circle, Clock, CheckCircle2, Play, Pause, CheckCheck, Timer, Eye, X, Link as LinkIcon, FileText, Target, CheckSquare } from 'lucide-react';
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     status: 'todo',
     priority: 'medium',
+    tags: [],
+    main_objectives: [],
+    secondary_objectives: [],
+    resources: [],
+    resource_links: [],
+    additional_notes: '',
+    subtasks: []
+  });
+  const [tempInput, setTempInput] = useState({
+    tag: '',
+    main_objective: '',
+    secondary_objective: '',
+    resource_name: '',
+    resource_url: '',
+    resource_description: '',
+    resource_link: '',
+    subtask: ''
   });
 
   useEffect(() => {
@@ -60,6 +79,13 @@ export default function Tasks() {
       description: task.description || '',
       status: task.status,
       priority: task.priority,
+      tags: task.tags || [],
+      main_objectives: task.main_objectives || [],
+      secondary_objectives: task.secondary_objectives || [],
+      resources: task.resources || [],
+      resource_links: task.resource_links || [],
+      additional_notes: task.additional_notes || '',
+      subtasks: task.subtasks || []
     });
     setShowModal(true);
   };
@@ -81,8 +107,113 @@ export default function Tasks() {
       description: '',
       status: 'todo',
       priority: 'medium',
+      tags: [],
+      main_objectives: [],
+      secondary_objectives: [],
+      resources: [],
+      resource_links: [],
+      additional_notes: '',
+      subtasks: []
+    });
+    setTempInput({
+      tag: '',
+      main_objective: '',
+      secondary_objective: '',
+      resource_name: '',
+      resource_url: '',
+      resource_description: '',
+      resource_link: '',
+      subtask: ''
     });
     setEditingTask(null);
+  };
+
+  // Helper functions for managing arrays in form
+  const addTag = () => {
+    if (tempInput.tag.trim()) {
+      setFormData({ ...formData, tags: [...formData.tags, tempInput.tag.trim()] });
+      setTempInput({ ...tempInput, tag: '' });
+    }
+  };
+
+  const removeTag = (index) => {
+    setFormData({ ...formData, tags: formData.tags.filter((_, i) => i !== index) });
+  };
+
+  const addMainObjective = () => {
+    if (tempInput.main_objective.trim()) {
+      setFormData({ ...formData, main_objectives: [...formData.main_objectives, tempInput.main_objective.trim()] });
+      setTempInput({ ...tempInput, main_objective: '' });
+    }
+  };
+
+  const removeMainObjective = (index) => {
+    setFormData({ ...formData, main_objectives: formData.main_objectives.filter((_, i) => i !== index) });
+  };
+
+  const addSecondaryObjective = () => {
+    if (tempInput.secondary_objective.trim()) {
+      setFormData({ ...formData, secondary_objectives: [...formData.secondary_objectives, tempInput.secondary_objective.trim()] });
+      setTempInput({ ...tempInput, secondary_objective: '' });
+    }
+  };
+
+  const removeSecondaryObjective = (index) => {
+    setFormData({ ...formData, secondary_objectives: formData.secondary_objectives.filter((_, i) => i !== index) });
+  };
+
+  const addResource = () => {
+    if (tempInput.resource_name.trim()) {
+      const newResource = {
+        name: tempInput.resource_name.trim(),
+        url: tempInput.resource_url.trim() || null,
+        description: tempInput.resource_description.trim() || null
+      };
+      setFormData({ ...formData, resources: [...formData.resources, newResource] });
+      setTempInput({ ...tempInput, resource_name: '', resource_url: '', resource_description: '' });
+    }
+  };
+
+  const removeResource = (index) => {
+    setFormData({ ...formData, resources: formData.resources.filter((_, i) => i !== index) });
+  };
+
+  const addResourceLink = () => {
+    if (tempInput.resource_link.trim()) {
+      setFormData({ ...formData, resource_links: [...formData.resource_links, tempInput.resource_link.trim()] });
+      setTempInput({ ...tempInput, resource_link: '' });
+    }
+  };
+
+  const removeResourceLink = (index) => {
+    setFormData({ ...formData, resource_links: formData.resource_links.filter((_, i) => i !== index) });
+  };
+
+  const addSubtask = () => {
+    if (tempInput.subtask.trim()) {
+      const newSubtask = {
+        id: Date.now().toString(),
+        title: tempInput.subtask.trim(),
+        completed: false
+      };
+      setFormData({ ...formData, subtasks: [...formData.subtasks, newSubtask] });
+      setTempInput({ ...tempInput, subtask: '' });
+    }
+  };
+
+  const removeSubtask = (index) => {
+    setFormData({ ...formData, subtasks: formData.subtasks.filter((_, i) => i !== index) });
+  };
+
+  const toggleSubtask = (index) => {
+    const updatedSubtasks = [...formData.subtasks];
+    updatedSubtasks[index].completed = !updatedSubtasks[index].completed;
+    setFormData({ ...formData, subtasks: updatedSubtasks });
+  };
+
+  const viewTaskDetails = (task) => {
+    setSelectedTask(task);
+    setShowDetailModal(true);
   };
 
   const groupedTasks = {
@@ -158,6 +289,7 @@ export default function Tasks() {
                   onEdit={handleEdit} 
                   onDelete={handleDelete}
                   onTimerAction={handleTimerAction}
+                  onViewDetails={viewTaskDetails}
                 />
               ))
             )}
@@ -188,6 +320,7 @@ export default function Tasks() {
                   onEdit={handleEdit} 
                   onDelete={handleDelete}
                   onTimerAction={handleTimerAction}
+                  onViewDetails={viewTaskDetails}
                 />
               ))
             )}
@@ -218,6 +351,7 @@ export default function Tasks() {
                   onEdit={handleEdit} 
                   onDelete={handleDelete}
                   onTimerAction={handleTimerAction}
+                  onViewDetails={viewTaskDetails}
                 />
               ))
             )}
@@ -225,9 +359,9 @@ export default function Tasks() {
         </Card>
       </div>
 
-      {/* Modal */}
+      {/* Create/Edit Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingTask ? 'Editar Tarea' : 'Nueva Tarea'}</DialogTitle>
             <DialogDescription>
@@ -236,6 +370,7 @@ export default function Tasks() {
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
+              {/* Title */}
               <div className="grid gap-2">
                 <Label htmlFor="title">Título</Label>
                 <Input
@@ -246,6 +381,8 @@ export default function Tasks() {
                   placeholder="Nombre de la tarea"
                 />
               </div>
+
+              {/* Description */}
               <div className="grid gap-2">
                 <Label htmlFor="description">Descripción</Label>
                 <Textarea
@@ -256,6 +393,8 @@ export default function Tasks() {
                   placeholder="Detalles de la tarea (opcional)"
                 />
               </div>
+
+              {/* Status and Priority */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="status">Estado</Label>
@@ -292,6 +431,251 @@ export default function Tasks() {
                   </Select>
                 </div>
               </div>
+
+              {/* Tags */}
+              <div className="grid gap-2">
+                <Label>Etiquetas</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={tempInput.tag}
+                    onChange={(e) => setTempInput({ ...tempInput, tag: e.target.value })}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    placeholder="Agregar etiqueta"
+                  />
+                  <Button type="button" onClick={addTag} size="sm">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {formData.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.tags.map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="gap-1">
+                        {tag}
+                        <X
+                          className="h-3 w-3 cursor-pointer"
+                          onClick={() => removeTag(index)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Main Objectives */}
+              <div className="grid gap-2">
+                <Label className="flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Objetivos Principales
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={tempInput.main_objective}
+                    onChange={(e) => setTempInput({ ...tempInput, main_objective: e.target.value })}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addMainObjective())}
+                    placeholder="Agregar objetivo principal"
+                  />
+                  <Button type="button" onClick={addMainObjective} size="sm">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {formData.main_objectives.length > 0 && (
+                  <ul className="list-disc list-inside space-y-1 mt-2">
+                    {formData.main_objectives.map((obj, index) => (
+                      <li key={index} className="text-sm flex items-center justify-between">
+                        <span className="flex-1">{obj}</span>
+                        <X
+                          className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive"
+                          onClick={() => removeMainObjective(index)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Secondary Objectives */}
+              <div className="grid gap-2">
+                <Label className="flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Objetivos Secundarios
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={tempInput.secondary_objective}
+                    onChange={(e) => setTempInput({ ...tempInput, secondary_objective: e.target.value })}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSecondaryObjective())}
+                    placeholder="Agregar objetivo secundario"
+                  />
+                  <Button type="button" onClick={addSecondaryObjective} size="sm">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {formData.secondary_objectives.length > 0 && (
+                  <ul className="list-disc list-inside space-y-1 mt-2">
+                    {formData.secondary_objectives.map((obj, index) => (
+                      <li key={index} className="text-sm flex items-center justify-between">
+                        <span className="flex-1">{obj}</span>
+                        <X
+                          className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive"
+                          onClick={() => removeSecondaryObjective(index)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Resources */}
+              <div className="grid gap-2">
+                <Label className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Recursos
+                </Label>
+                <div className="space-y-2">
+                  <Input
+                    value={tempInput.resource_name}
+                    onChange={(e) => setTempInput({ ...tempInput, resource_name: e.target.value })}
+                    placeholder="Nombre del recurso"
+                  />
+                  <Input
+                    value={tempInput.resource_url}
+                    onChange={(e) => setTempInput({ ...tempInput, resource_url: e.target.value })}
+                    placeholder="URL del recurso (opcional)"
+                  />
+                  <Input
+                    value={tempInput.resource_description}
+                    onChange={(e) => setTempInput({ ...tempInput, resource_description: e.target.value })}
+                    placeholder="Descripción del recurso (opcional)"
+                  />
+                  <Button type="button" onClick={addResource} size="sm" className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar Recurso
+                  </Button>
+                </div>
+                {formData.resources.length > 0 && (
+                  <div className="space-y-2 mt-2">
+                    {formData.resources.map((resource, index) => (
+                      <Card key={index} className="p-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{resource.name}</p>
+                            {resource.url && (
+                              <a
+                                href={resource.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                              >
+                                <LinkIcon className="h-3 w-3" />
+                                {resource.url}
+                              </a>
+                            )}
+                            {resource.description && (
+                              <p className="text-xs text-muted-foreground mt-1">{resource.description}</p>
+                            )}
+                          </div>
+                          <X
+                            className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive"
+                            onClick={() => removeResource(index)}
+                          />
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Resource Links */}
+              <div className="grid gap-2">
+                <Label className="flex items-center gap-2">
+                  <LinkIcon className="h-4 w-4" />
+                  Enlaces de Recursos
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={tempInput.resource_link}
+                    onChange={(e) => setTempInput({ ...tempInput, resource_link: e.target.value })}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addResourceLink())}
+                    placeholder="Agregar enlace"
+                  />
+                  <Button type="button" onClick={addResourceLink} size="sm">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {formData.resource_links.length > 0 && (
+                  <div className="space-y-1 mt-2">
+                    {formData.resource_links.map((link, index) => (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline flex items-center gap-1 flex-1 truncate"
+                        >
+                          <LinkIcon className="h-3 w-3" />
+                          {link}
+                        </a>
+                        <X
+                          className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive"
+                          onClick={() => removeResourceLink(index)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Subtasks */}
+              <div className="grid gap-2">
+                <Label className="flex items-center gap-2">
+                  <CheckSquare className="h-4 w-4" />
+                  Subtareas
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={tempInput.subtask}
+                    onChange={(e) => setTempInput({ ...tempInput, subtask: e.target.value })}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSubtask())}
+                    placeholder="Agregar subtarea"
+                  />
+                  <Button type="button" onClick={addSubtask} size="sm">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {formData.subtasks.length > 0 && (
+                  <div className="space-y-2 mt-2">
+                    {formData.subtasks.map((subtask, index) => (
+                      <div key={subtask.id} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={subtask.completed}
+                          onChange={() => toggleSubtask(index)}
+                          className="h-4 w-4"
+                        />
+                        <span className={`flex-1 text-sm ${subtask.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          {subtask.title}
+                        </span>
+                        <X
+                          className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-destructive"
+                          onClick={() => removeSubtask(index)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Additional Notes */}
+              <div className="grid gap-2">
+                <Label htmlFor="additional_notes">Notas Adicionales</Label>
+                <Textarea
+                  id="additional_notes"
+                  rows={3}
+                  value={formData.additional_notes}
+                  onChange={(e) => setFormData({ ...formData, additional_notes: e.target.value })}
+                  placeholder="Notas adicionales sobre la tarea (opcional)"
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button
@@ -311,11 +695,224 @@ export default function Tasks() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Detail View Modal */}
+      <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedTask?.title}</DialogTitle>
+            <DialogDescription>
+              Detalles completos de la tarea
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTask && (
+            <div className="space-y-4 py-4">
+              {/* Status and Priority */}
+              <div className="flex gap-4">
+                <div>
+                  <p className="text-sm font-medium mb-1">Estado</p>
+                  <Badge variant="outline">
+                    {selectedTask.status === 'todo' && 'Pendiente'}
+                    {selectedTask.status === 'in_progress' && 'En Proceso'}
+                    {selectedTask.status === 'done' && 'Completada'}
+                    {selectedTask.status === 'backlog' && 'Backlog'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-1">Prioridad</p>
+                  <Badge variant={
+                    selectedTask.priority === 'urgent' ? 'destructive' :
+                    selectedTask.priority === 'high' ? 'default' :
+                    selectedTask.priority === 'medium' ? 'secondary' : 'outline'
+                  }>
+                    {selectedTask.priority === 'urgent' && 'Urgente'}
+                    {selectedTask.priority === 'high' && 'Alta'}
+                    {selectedTask.priority === 'medium' && 'Media'}
+                    {selectedTask.priority === 'low' && 'Baja'}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Description */}
+              {selectedTask.description && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Descripción</p>
+                  <p className="text-sm text-muted-foreground">{selectedTask.description}</p>
+                </div>
+              )}
+
+              {/* Tags */}
+              {selectedTask.tags && selectedTask.tags.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Etiquetas</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedTask.tags.map((tag, index) => (
+                      <Badge key={index} variant="secondary">{tag}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Main Objectives */}
+              {selectedTask.main_objectives && selectedTask.main_objectives.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Objetivos Principales
+                  </p>
+                  <ul className="list-disc list-inside space-y-1">
+                    {selectedTask.main_objectives.map((obj, index) => (
+                      <li key={index} className="text-sm text-muted-foreground">{obj}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Secondary Objectives */}
+              {selectedTask.secondary_objectives && selectedTask.secondary_objectives.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Objetivos Secundarios
+                  </p>
+                  <ul className="list-disc list-inside space-y-1">
+                    {selectedTask.secondary_objectives.map((obj, index) => (
+                      <li key={index} className="text-sm text-muted-foreground">{obj}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Resources */}
+              {selectedTask.resources && selectedTask.resources.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Recursos
+                  </p>
+                  <div className="space-y-2">
+                    {selectedTask.resources.map((resource, index) => (
+                      <Card key={index} className="p-3">
+                        <p className="font-medium text-sm">{resource.name}</p>
+                        {resource.url && (
+                          <a
+                            href={resource.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:underline flex items-center gap-1 mt-1"
+                          >
+                            <LinkIcon className="h-3 w-3" />
+                            {resource.url}
+                          </a>
+                        )}
+                        {resource.description && (
+                          <p className="text-xs text-muted-foreground mt-1">{resource.description}</p>
+                        )}
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Resource Links */}
+              {selectedTask.resource_links && selectedTask.resource_links.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <LinkIcon className="h-4 w-4" />
+                    Enlaces de Recursos
+                  </p>
+                  <div className="space-y-1">
+                    {selectedTask.resource_links.map((link, index) => (
+                      <a
+                        key={index}
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <LinkIcon className="h-3 w-3" />
+                        {link}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Subtasks */}
+              {selectedTask.subtasks && selectedTask.subtasks.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <CheckSquare className="h-4 w-4" />
+                    Subtareas ({selectedTask.subtasks.filter(st => st.completed).length}/{selectedTask.subtasks.length})
+                  </p>
+                  <div className="space-y-2">
+                    {selectedTask.subtasks.map((subtask, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={subtask.completed}
+                          disabled
+                          className="h-4 w-4"
+                        />
+                        <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          {subtask.title}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Notes */}
+              {selectedTask.additional_notes && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Notas Adicionales</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedTask.additional_notes}</p>
+                </div>
+              )}
+
+              {/* Time Tracking */}
+              {selectedTask.total_time_spent > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <Timer className="h-4 w-4" />
+                    Tiempo Invertido
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {(() => {
+                      const seconds = selectedTask.total_time_spent;
+                      const hours = Math.floor(seconds / 3600);
+                      const minutes = Math.floor((seconds % 3600) / 60);
+                      if (hours > 0) return `${hours}h ${minutes}m`;
+                      return `${minutes}m`;
+                    })()}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDetailModal(false);
+                handleEdit(selectedTask);
+              }}
+            >
+              <Edit2 className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+            <Button onClick={() => setShowDetailModal(false)}>
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-function TaskCard({ task, onEdit, onDelete, onTimerAction }) {
+function TaskCard({ task, onEdit, onDelete, onTimerAction, onViewDetails }) {
   const getPriorityVariant = (priority) => {
     switch (priority) {
       case 'urgent':
@@ -362,6 +959,22 @@ function TaskCard({ task, onEdit, onDelete, onTimerAction }) {
           <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
             {task.description}
           </p>
+        )}
+        
+        {/* Tags Display */}
+        {task.tags && task.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {task.tags.slice(0, 3).map((tag, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+            {task.tags.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{task.tags.length - 3}
+              </Badge>
+            )}
+          </div>
         )}
         
         {/* Time Tracking Display */}
@@ -414,6 +1027,15 @@ function TaskCard({ task, onEdit, onDelete, onTimerAction }) {
         )}
 
         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onViewDetails(task)}
+            className="h-8 gap-1"
+          >
+            <Eye className="h-3 w-3" />
+            Ver
+          </Button>
           <Button
             size="sm"
             variant="ghost"

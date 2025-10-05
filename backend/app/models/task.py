@@ -70,13 +70,12 @@ class TaskUpdate(BaseModel):
 
 
 class TaskResponse(TaskBase):
-    id: str = Field(alias="_id")
+    id: str
     user_id: str
     created_at: datetime
     updated_at: datetime
     
     class Config:
-        populate_by_name = True
         json_schema_extra = {
             "example": {
                 "id": "507f1f77bcf86cd799439011",

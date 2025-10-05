@@ -12,20 +12,40 @@ class Priority(str, Enum):
 
 
 class TaskStatus(str, Enum):
+    BACKLOG = "backlog"
     TODO = "todo"
     IN_PROGRESS = "in_progress"
     DONE = "done"
 
 
+class EisenhowerQuadrant(str, Enum):
+    URGENT_IMPORTANT = "urgent_important"
+    URGENT_NOT_IMPORTANT = "urgent_not_important"
+    NOT_URGENT_IMPORTANT = "not_urgent_important"
+    NOT_URGENT_NOT_IMPORTANT = "not_urgent_not_important"
+
+
+class TimeEntry(BaseModel):
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    duration_seconds: Optional[int] = None
+
+
 class TaskBase(BaseModel):
     title: str
     description: Optional[str] = None
-    status: TaskStatus = TaskStatus.TODO
+    status: TaskStatus = TaskStatus.BACKLOG
     priority: Priority = Priority.MEDIUM
     due_date: Optional[datetime] = None
     tags: List[str] = []
     board_id: Optional[str] = None
     list_name: Optional[str] = "Pendientes"
+    eisenhower_quadrant: Optional[EisenhowerQuadrant] = None
+    time_entries: List[TimeEntry] = []
+    total_time_spent: int = 0  # in seconds
+    is_running: bool = False
+    current_session_start: Optional[datetime] = None
+    completion_date: Optional[datetime] = None
 
 
 class TaskCreate(TaskBase):
@@ -41,6 +61,12 @@ class TaskUpdate(BaseModel):
     tags: Optional[List[str]] = None
     board_id: Optional[str] = None
     list_name: Optional[str] = None
+    eisenhower_quadrant: Optional[EisenhowerQuadrant] = None
+    time_entries: Optional[List[TimeEntry]] = None
+    total_time_spent: Optional[int] = None
+    is_running: Optional[bool] = None
+    current_session_start: Optional[datetime] = None
+    completion_date: Optional[datetime] = None
 
 
 class TaskResponse(TaskBase):

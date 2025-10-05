@@ -1,5 +1,13 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '../services/auth';
+import { Button } from '@/components/ui/button';
+import { LayoutDashboard, CheckSquare, FileText, LogOut, Menu } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
@@ -11,47 +19,77 @@ export default function Layout({ children }) {
   };
 
   const isActive = (path) => {
-    return location.pathname === path ? 'bg-primary-700' : '';
+    return location.pathname === path;
   };
 
+  const navItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/tasks', label: 'Tareas', icon: CheckSquare },
+    { path: '/notes', label: 'Notas', icon: FileText },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="bg-primary-600 text-white shadow-lg">
+      <nav className="border-b bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex">
+            <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-2xl font-bold">COP</h1>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                  OneDate
+                </h1>
               </div>
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <Link
-                  to="/dashboard"
-                  className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive('/dashboard')}`}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/tasks"
-                  className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive('/tasks')}`}
-                >
-                  Tareas
-                </Link>
-                <Link
-                  to="/notes"
-                  className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive('/notes')}`}
-                >
-                  Notas
-                </Link>
+              <div className="hidden md:ml-8 md:flex md:space-x-2">
+                {navItems.map(({ path, label, icon: Icon }) => (
+                  <Link key={path} to={path}>
+                    <Button
+                      variant={isActive(path) ? "default" : "ghost"}
+                      className="flex items-center gap-2"
+                    >
+                      <Icon className="h-4 w-4" />
+                      {label}
+                    </Button>
+                  </Link>
+                ))}
               </div>
             </div>
-            <div className="flex items-center">
-              <button
+            
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center">
+              <Button
                 onClick={handleLogout}
-                className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-700 hover:bg-primary-800"
+                variant="outline"
+                className="flex items-center gap-2"
               >
+                <LogOut className="h-4 w-4" />
                 Cerrar Sesión
-              </button>
+              </Button>
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden flex items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {navItems.map(({ path, label, icon: Icon }) => (
+                    <DropdownMenuItem key={path} asChild>
+                      <Link to={path} className="flex items-center gap-2 cursor-pointer">
+                        <Icon className="h-4 w-4" />
+                        {label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Cerrar Sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
